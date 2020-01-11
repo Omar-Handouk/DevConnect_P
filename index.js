@@ -10,10 +10,11 @@ const app = express();
 
 // Define middleware
 app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({ extended: false }));
 app.use(require('morgan')('dev'));
 
 // Define routes
+app.use(require('helmet')());
 app.use('/api/auth', require('./routes/api/auth'));
 app.use('/api/users', require('./routes/api/users'));
 app.use('/api/profile', require('./routes/api/profile'));

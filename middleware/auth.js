@@ -4,11 +4,10 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 
 module.exports = (req, res, next) => {
-
 	const token = req.header('x-auth-token');
 
 	if (!token) {
-		return res.status(401).json({errors: [{msg: 'Access denied'}]});
+		return res.status(401).json({ errors: [{ msg: 'Access denied' }] });
 	}
 
 	let decoded = undefined;
@@ -20,6 +19,6 @@ module.exports = (req, res, next) => {
 		next();
 	} catch (e) {
 		console.error(e.message);
-		res.status(401).json({errors: [{msg: 'Token not valid'}]});
+		res.status(401).json({ errors: [{ msg: 'Token not valid' }] });
 	}
 };

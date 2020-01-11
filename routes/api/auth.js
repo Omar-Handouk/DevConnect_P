@@ -2,20 +2,22 @@
 
 const router = require('express').Router();
 const auth = require('../../middleware/auth');
-const {model: userModel} = require('../../models/User');
+const { model: userModel } = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
-const {check, validationResult} = require('express-validator');
+const { check, validationResult } = require('express-validator');
 
-router.post('/',
-	check('email', 'Please enter a valid email').isEmail().notEmpty(),
+router.post(
+	'/',
+	check('email', 'Please enter a valid email')
+		.isEmail()
+		.notEmpty(),
 	check('password', 'Please enter a password').notEmpty(),
 	async (req, res) => {
-
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
-			return res.status(422).json({ errors: errors.array()});
+			return res.status(422).json({ errors: errors.array() });
 		}
 
 		let { email, password } = req.body;
@@ -23,16 +25,16 @@ router.post('/',
 		let user = null;
 
 		try {
-			user = await userModel.findOne({email});
+			user = await userModel.findOne({ email: email.toLowerCase() });
 		} catch (e) {
 			console.error(e.message);
-			return res.status(500).json({errors: [{msg: 'Server error'}]});
+			return res.status(500).json({ errors: [{ msg: 'Server error' }] });
 		}
 
 		if (!user) {
-			return res.status(400).json({errors: [{msg: 'Invalid credentials'}]});
+			return res.status(400).json({ errors: [{ msg: 'Invalid credentials' }] });
 		} else if (!bcrypt.compareSync(password, user.password)) {
-			return res.status(400).json({errors: [{msg: 'Invalid credentials'}]});
+			return res.status(400).json({ errors: [{ msg: 'Invalid credentials' }] });
 		}
 
 		let payload = {
@@ -46,8 +48,9 @@ router.post('/',
 
 		let token = jwt.sign(payload, config.get('jwt.secret'), jwtOptions);
 
-		res.status(200).json({token});
-	});
+		res.status(200).json({ token });
+	}
+);
 
 /**
  * @route  GET api/auth
@@ -55,18 +58,17 @@ router.post('/',
  * @access Public
  */
 router.get('/', auth, async (req, res) => {
-
 	let profile = null;
 
 	try {
 		profile = await userModel.findById(req.user.id).select('-password');
 	} catch (e) {
 		console.error(e.message);
-		return res.status(500).json({errors: [{msg: 'Server error'}]});
+		return res.status(500).json({ errors: [{ msg: 'Server error' }] });
 	}
 
 	if (!profile) {
-		return res.status(404).json({errors: [{msg: 'User was not found'}]});
+		return res.status(404).json({ errors: [{ msg: 'User was not found' }] });
 	}
 
 	res.status(200).json(profile);

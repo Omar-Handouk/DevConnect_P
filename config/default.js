@@ -7,7 +7,8 @@ module.exports = {
 		pass: process.env.dbPass,
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
-		useCreateIndex: true
+		useCreateIndex: true,
+		useFindAndModify: false
 	},
 	jwt: {
 		secret: '5BE95CB52C1359C93641248B45182',

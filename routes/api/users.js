@@ -1,59 +1,54 @@
 'use strict';
 
 const router = require('express').Router();
-const {check, validationResult} = require('express-validator');
-const {model: userModel} = require('../../models/User');
+const { check, validationResult } = require('express-validator');
+const { model: userModel } = require('../../models/User');
 const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 
-router.post('/',
+router.post(
+	'/',
 	check('name', 'Name is required').notEmpty(),
-	check('email', 'Please include a valid email').isEmail().notEmpty(),
-	check('password', 'Please enter a password of 6 characters or more').isLength({min: 6}),
+	check('email', 'Please include a valid email')
+		.isEmail()
+		.notEmpty(),
+	check('password', 'Please enter a password of 6 characters or more').isLength({
+		min: 6
+	}),
 	async (req, res) => {
-
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
-			return res.status(422).json({errors: errors.array()});
+			return res.status(422).json({ errors: errors.array() });
 		}
 
-		let {name, email, password} = req.body;
+		let { name, email, password } = req.body;
+
+		let userDoc = {
+			name,
+			email: email.toLowerCase(),
+			password: bcrypt.hashSync(password, 10),
+			avatar: gravatar.url(email, {size: '200', rating: 'pg', default: 'identicon'})
+		};
 
 		let user = null;
 
 		try {
-			user = await userModel.findOne({email});
+			user = await userModel.create(userDoc);
 		} catch (e) {
-			console.error(e.message);
-			return res.status(500).json({errors: [{msg: 'Server error'}]});
+			if (e.message.includes('duplicate key')) {
+				console.error(e.message);
+				return res.status(409).json({ errors: [{ msg: 'User already registered' }] });
+			} else {
+				console.error(e.message);
+				return res.status(500).json({errors: [{msg: 'Server error'}]});
+			}
 		}
-
-		if (user) {
-			return res.status(409).json({errors: [{msg: 'User already registered'}]});
-		}
-
-		const avatar = gravatar.url(email, {
-			size: '200',
-			rating: 'pg',
-			default: 'identicon'
-		});
-
-		let hash = bcrypt.hashSync(password, 10);
-
-		let userDoc = {
-			name,
-			email,
-			password: hash,
-			avatar
-		};
-
-		let dbResponse = await userModel.create(userDoc);
 
 		let payload = {
 			user: {
-				id: dbResponse.id
+				id: user.id
 			}
 		};
 
@@ -63,7 +58,8 @@ router.post('/',
 
 		let token = jwt.sign(payload, config.get('jwt.secret'), jwtOptions);
 
-		return res.status(201).json({token});
-	});
+		return res.status(201).json({ token });
+	}
+);
 
 module.exports = router;
