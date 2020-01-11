@@ -29,7 +29,11 @@ router.post(
 			name,
 			email: email.toLowerCase(),
 			password: bcrypt.hashSync(password, 10),
-			avatar: gravatar.url(email, {size: '200', rating: 'pg', default: 'identicon'})
+			avatar: gravatar.url(email, {
+				size: '200',
+				rating: 'pg',
+				default: 'identicon'
+			})
 		};
 
 		let user = null;
@@ -39,10 +43,12 @@ router.post(
 		} catch (e) {
 			if (e.message.includes('duplicate key')) {
 				console.error(e.message);
-				return res.status(409).json({ errors: [{ msg: 'User already registered' }] });
+				return res
+					.status(409)
+					.json({ errors: [{ msg: 'User already registered' }] });
 			} else {
 				console.error(e.message);
-				return res.status(500).json({errors: [{msg: 'Server error'}]});
+				return res.status(500).json({ errors: [{ msg: 'Server error' }] });
 			}
 		}
 
