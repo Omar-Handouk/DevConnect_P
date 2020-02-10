@@ -25,6 +25,7 @@ router.post(
 
 		let { name, email, password } = req.body;
 
+
 		let userDoc = {
 			name,
 			email: email.toLowerCase(),

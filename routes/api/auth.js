@@ -1,11 +1,11 @@
 'use strict';
 
-const router = require('express').Router();
-const auth = require('../../middleware/auth');
-const { model: userModel } = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const router = require('express').Router();
+const auth = require('../../middleware/auth');
+const { model: userModel } = require('../../models/User');
 const { check, validationResult } = require('express-validator');
 
 router.post(
@@ -52,11 +52,6 @@ router.post(
 	}
 );
 
-/**
- * @route  GET api/auth
- * @desc   Test route
- * @access Public
- */
 router.get('/', auth, async (req, res) => {
 	let profile = null;
 
